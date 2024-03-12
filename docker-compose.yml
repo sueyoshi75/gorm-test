@@ -1,0 +1,23 @@
+version: "3.9"
+services:
+  go:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    links:
+      - db
+    tty: true
+  db:
+    image: mysql:8.0.29
+    platform: linux/amd64
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: gorm-test
+    volumes:
+      - db-vol:/var/lib/mysql
+    ports:
+      - "3306:3306"
+volumes:
+  db-vol:
