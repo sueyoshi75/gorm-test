@@ -1,111 +1,111 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
-
+	"time"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-type User struct {
-	gorm.Model
-	Name string `json:"name"`
-	Age int `json:"age"`
+type Todo struct {
+	Id          int       `json:"id"`
+	Title       string    `json:"title"`
+	Content     string    `json:"content"`
+	IsCompleted bool      `json:"isCompleted"`
+	CreatedAt   time.Time `json:"createdAt"`
 }
 
 func main() {
 	db := dbinit()
-	db.AutoMigrate(&User{})
+	db.AutoMigrate(&Todo{})
 
 	r := gin.Default()
-	r.GET("/", func(c *gin.Context) {
-		result, err := getAll(db)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusOK, result)
-	})
-	r.Run(":8080")
 
-	// insert(db)
-	// getOne(db)
-	// getAll(db)
-	// updates(db)
-	// delete(db)
+	//corsの設定
+	r.Use(cors.New(cors.Config{
+		AllowOrigins: []string{
+				"http://localhost:5173",
+		},
+		AllowMethods: []string{
+				"GET",
+				"POST",
+				"PUT",
+				"DELETE",
+		},
+		AllowHeaders: []string{
+				"Content-Type",
+		},
+		AllowCredentials: false,
+		MaxAge: 24 * time.Hour,
+	}))
+
+	//全件表示
+	r.GET("/todos", func(c *gin.Context) {
+		todos := []Todo{}
+		result := db.Find(&todos)
+		if result.Error != nil {
+			log.Fatal(result.Error)
+		}
+		c.JSON(http.StatusOK, todos)
+	})
+
+	//ユーザー作成
+	r.POST("/todos", func(c *gin.Context) {
+		var todo Todo
+		c.BindJSON(&todo)
+		result := db.Create(&todo)
+		if result.Error != nil {
+			log.Fatal(result.Error)
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "todo created successfully"})
+	})
+
+	//データ検索
+	r.GET("/todos/:id", func(c *gin.Context) {
+		var todo Todo
+		id := c.Param("id")
+		result := db.First(&todo, id)
+		if result.Error != nil {
+			log.Fatal(result.Error)
+		}
+		c.JSON(http.StatusOK, todo)
+	})
+
+	//データ更新
+	r.PUT("/todos/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		var todo Todo
+		c.BindJSON(&todo)
+		result := db.Model(&Todo{}).Where("id = ?", id).Updates(&todo)
+		if result.Error != nil {
+			log.Fatal(result.Error)
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "todo updated successfully"})
+	})
+
+	//データ削除
+	r.DELETE("/todos/:id", func(c *gin.Context) {
+		var todo Todo
+		id := c.Param("id")
+		result := db.Delete(&todo, id)
+		if result.Error != nil {
+			log.Fatal(result.Error)
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "todo deleted successfully"})
+	})
+
+	r.Run(":8080")
 }
 
 //DB接続
 func dbinit() *gorm.DB {
 	dsn := "root@tcp(db:3306)/gorm-test?charset=utf8mb4&parseTime=True&loc=Local"
-  db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-    panic("failed to connect database")
-  }
+		panic("failed to connect database")
+	}
 	return db
-}
-
-//データ作成
-func insert(db *gorm.DB) {
-	user := User{
-		Name:     "TeTe",
-		Age:      40,
-	}
-	result := db.Create(&user)
-
-	if result.Error != nil {
-		log.Fatal(result.Error)
-	}
-	fmt.Println("Made:", result.RowsAffected)
-	fmt.Println("user:", user)
-}
-
-//データ単体取得
-func getOne(db *gorm.DB) (User, error){
-	user := User{}
-	result := db.First(&user, "id = ?", 1)
-
-	if result.Error != nil {
-		log.Fatal(result.Error)
-	}
-	fmt.Println("Get:", result.RowsAffected)
-	fmt.Println("user:", user)
-
-	return user, nil
-}
-
-//データ全件取得
-func getAll(db *gorm.DB) ([]User, error) {
-	users := []User{}
-	result := db.Find(&users)
-	
-	if result.Error != nil {
-		log.Fatal(result.Error)
-	}
-	fmt.Println("Get:", result.RowsAffected)
-	fmt.Println("users:", users)
-
-	return users, nil
-}
-
-//データ更新
-func updates(db *gorm.DB) {
-	result := db.Model(&User{}).Where("id = 1").Updates(User{Name: "Tama", Age: 10})
-	if result.Error != nil {
-		log.Fatal(result.Error)
-	}
-	fmt.Println("Update:", result.RowsAffected)
-
-	user := User{}
-	db.Where("id = 1").Take(&user)
-	fmt.Println("user:", user)
-}
-
-//データ削除
-func delete(db *gorm.DB) {
-	db.Where("id = 7").Delete(&User{})
-	fmt.Println("Delete: 1")
 }
