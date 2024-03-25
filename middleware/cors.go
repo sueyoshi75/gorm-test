@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"os"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -8,7 +10,7 @@ import (
 func Cors() gin.HandlerFunc {
 	return cors.New(cors.Config{
 		AllowOrigins: []string{
-			"*",
+			os.Getenv("ALLOW_ORIGINS"),
 		},
 		AllowMethods: []string{
 			"POST",
