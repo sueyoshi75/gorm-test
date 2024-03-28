@@ -6,10 +6,11 @@ import (
 )
 
 type Employee struct {
-	ID uint `gorm:"primaryKey" json:"id"`
+	ID int `gorm:"primaryKey" json:"id"`
 	Employeeid string `json:"employeeid"`
-	CreatedAt *time.Time `json:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at"`
+	Name string `json:"name"`
+	CreatedAt *time.Time
+	UpdatedAt *time.Time
 	Model[Employee] `gorm:"-" json:"-"`
 }
 

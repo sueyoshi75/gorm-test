@@ -16,9 +16,9 @@ func (Model[T]) All(tx *gorm.DB) ([]T, error) {
 	return values, nil
 }
 
-func (m Model[T]) Create(tx *gorm.DB, value T) error {
-	return tx.Create(&value).Error
-}
+// func (m Model[T]) Create(tx *gorm.DB, value interface{}) error {
+// 	return tx.Create(&value).Error
+// }
 
 func (m Model[T]) Updates(tx *gorm.DB, value T) error {
 	return tx.Updates(&value).Error

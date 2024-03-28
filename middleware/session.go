@@ -12,7 +12,7 @@ import (
 
 func Session() gin.HandlerFunc {
 	db := database.Get()
-	godotenv.Load("/var/www/orderdb-api/.env")
+	godotenv.Load()
 	secret := os.Getenv("SECRET")
 	store := gormsessions.NewStore(db, true, []byte(secret))
 	return sessions.Sessions("sessions", store)

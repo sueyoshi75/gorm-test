@@ -43,5 +43,5 @@ func (LoginController) Logout(c *gin.Context) {
 		return
 	}
 	url := os.Getenv("UI_URL")
-	c.Redirect(http.StatusFound, url+"login")
+	c.Redirect(http.StatusFound, url+"employees/new")
 }

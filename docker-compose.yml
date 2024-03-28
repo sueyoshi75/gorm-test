@@ -10,10 +10,12 @@ services:
     volumes:
       - .:/app
   db:
-    image: mysql:8.0.29
+    image: mysql
     environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-      MYSQL_DATABASE: gorm-test
+      MYSQL_ROOT_PASSWORD: ${ROOTPASS}
+      MYSQL_DATABASE: ${DATABASE}
+      MYSQL_USER: ${USER}
+      MYSQL_PASSWORD: ${PASSWORD}
     ports:
       - "3306:3306"
     volumes:
